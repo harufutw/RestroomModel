@@ -56,10 +56,17 @@ model = RestroomModel()
 model.read_csv('./people.csv', 'people')
 model.read_csv('./place.csv', 'place')
 model.make_restroom((6,6,6,6,6))
-print(model.search_empty(2))
 print(model.restroom)
 model.make_time_model(1,100,1)
 for time in model.t:
     print(time)
-    if time > int(model.people[1][3]):
-        print(model.search_empty(0))
+    for num_people in range(1,len(model.people)):
+        if (time > int(model.people[num_people][3])) & (int(model.people[num_people][6]) == 0):
+            num_restroom = 2
+            ret = model.search_empty(num_restroom)
+            if ret :
+                model.people[num_people][6] = 1
+            else :
+                model.people[num_people][6] = 2
+                model.restroom[num_restroom][1].append(1)
+    print(model.restroom)
