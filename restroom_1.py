@@ -3,6 +3,7 @@
 
 import numpy as np
 import csv
+from matplotlib import pyplot
 
 class RestroomModel:
     restroom = []
@@ -35,8 +36,8 @@ class RestroomModel:
             self.restroom.append([restroom_floor,0])
 
     # 時間軸を生成する関数
-    def make_time_model(self,start,stop,step):
-        self.t = np.arange(start,stop,step)
+    def make_time_model(self,start,stop):
+        self.t = np.arange(start,stop)
 
     # 空室を探す関数
     def search_empty(self,num_floor):
@@ -58,13 +59,17 @@ class RestroomModel:
                 break
         return flag == 1
 
+    def make_line_graph(self,x,y):
+        pyplot.plot(x,y)
+        pyplot.show()
+
 
 model = RestroomModel()
 model.read_csv('./people.csv', 'people')
 model.read_csv('./place.csv', 'place')
 model.make_restroom((6,6,6,6,6))
-print(model.restroom)
-model.make_time_model(1,100,1)
+model.make_time_model(0,5400)
+wait_people = []
 for time in model.t:
     print(time)
     num_floor = 2
@@ -78,14 +83,27 @@ for time in model.t:
                 model.restroom[num_floor][1] += 1
                 model.people[num_people][3] = str(int(model.people[num_people][3])+1)
                 model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
+                model.people[num_people][7] = str(int(model.people[num_people][7])+1)
         elif int(model.people[num_people][6]) == 2:
             ret = model.search_empty(num_floor)
             if ret :
                 model.people[num_people][6] = 1
                 model.restroom[num_floor][1] -= 1
+            else :
+                model.people[num_people][3] = str(int(model.people[num_people][3])+1)
+                model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
+                model.people[num_people][7] = str(int(model.people[num_people][7])+1)
 
         elif time == int(model.people[num_people][5]):
             model.leave_room(num_floor)
+    wait_people.append(model.restroom[num_floor][1])
 
     print(*model.restroom, sep='\n')
     print('\n')
+x = range(0,5400)
+y = wait_people
+model.make_line_graph(x,y)
+wait_time = []
+for i in model.people[1:]:
+    wait_time.append(int(i[7]))
+print(np.mean(np.array(wait_time)))
