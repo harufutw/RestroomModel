@@ -46,10 +46,17 @@ class RestroomModel:
                 self.restroom[num_floor][0][i] = 1
                 flag = 1
                 break
-        if flag == 0:
-            return False
-        else:
-            return True
+        return flag == 1
+
+    # 個室から退出する関数
+    def leave_room(self,num_floor):
+        flag = 0
+        for i in range(len(self.restroom[num_floor][0])):
+            if self.restroom[num_floor][0][i] == 1:
+                self.restroom[num_floor][0][i] = 0
+                flag = 1
+                break
+        return flag == 1
 
 
 model = RestroomModel()
@@ -60,13 +67,16 @@ print(model.restroom)
 model.make_time_model(1,100,1)
 for time in model.t:
     print(time)
+    num_floor = 2
     for num_people in range(1,len(model.people)):
-        if (time > int(model.people[num_people][3])) & (int(model.people[num_people][6]) == 0):
-            num_restroom = 2
-            ret = model.search_empty(num_restroom)
+        if (time == int(model.people[num_people][3])) & (int(model.people[num_people][6]) == 0):
+            ret = model.search_empty(num_floor)
             if ret :
                 model.people[num_people][6] = 1
             else :
                 model.people[num_people][6] = 2
-                model.restroom[num_restroom][1].append(1)
+                model.restroom[num_floor][1].append(1)
+        elif (time == int(model.people[num_people][5])):
+            model.leave_room(num_floor)
+
     print(model.restroom)
