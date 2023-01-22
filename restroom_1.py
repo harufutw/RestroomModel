@@ -32,7 +32,7 @@ class RestroomModel:
             restroom_floor = []
             for i in range(num_element):
                 restroom_floor.append(0)
-            self.restroom.append([restroom_floor,[]])
+            self.restroom.append([restroom_floor,0])
 
     # 時間軸を生成する関数
     def make_time_model(self,start,stop,step):
@@ -75,8 +75,17 @@ for time in model.t:
                 model.people[num_people][6] = 1
             else :
                 model.people[num_people][6] = 2
-                model.restroom[num_floor][1].append(1)
-        elif (time == int(model.people[num_people][5])):
+                model.restroom[num_floor][1] += 1
+                model.people[num_people][3] = str(int(model.people[num_people][3])+1)
+                model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
+        elif int(model.people[num_people][6]) == 2:
+            ret = model.search_empty(num_floor)
+            if ret :
+                model.people[num_people][6] = 1
+                model.restroom[num_floor][1] -= 1
+
+        elif time == int(model.people[num_people][5]):
             model.leave_room(num_floor)
 
-    print(model.restroom)
+    print(*model.restroom, sep='\n')
+    print('\n')
