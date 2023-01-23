@@ -71,24 +71,29 @@ class RestroomModel:
         transfer_time = 0
         for room in self.place :
             if room[0] == place_from :
-                num_place_to = self.num_floor_list[place_to]
-                transfer_time = int(num_place_to)
+                num_place_to = self.num_floor_list[place_to] + 1
+                transfer_time = int(room[num_place_to])
+                break
+        print(transfer_time)
         self.people[num_people][3] = str(int(self.people[num_people][3]) + transfer_time)
         self.people[num_people][5] = str(int(self.people[num_people][3]) + int(self.people[num_people][4]))
         self.people[num_people][2] = place_to
 
-    def make_line_graph(self,x,y):
-        pyplot.plot(x,y)
-        pyplot.show()
+    def search_near(self,place_name):
+        for i in range(len(self.place)):
+            if place_name == self.place[i][0]:
+                break
+        near = 't{0}'.format(self.place[i].index(sorted(self.place[i][1:])[1])+1)
+        return near
 
 
 model = RestroomModel()
 model.read_csv('./people.csv', 'people')
 model.read_csv('./place.csv', 'place')
 model.make_restroom((6,6,6,6,6))
-finish_time = 3200
+finish_time = 1200
 model.make_time_model(0,finish_time)
-wait_people = []
+wait_people = [[],[],[],[],[]]
 for time in model.t:
     print(time)
     for num_people in range(1,len(model.people)):
@@ -97,7 +102,7 @@ for time in model.t:
             num_floor = model.num_floor_list[place_name]
         except:
             pass
-        if (time == int(model.people[num_people][3])) & (int(model.people[num_people][6]) == 0 or 4):
+        if (time == int(model.people[num_people][3])) & (int(model.people[num_people][6]) == 0):
             ret = model.search_empty(num_floor)
             if ret :
                 model.people[num_people][6] = 1
@@ -107,16 +112,27 @@ for time in model.t:
                 model.people[num_people][3] = str(int(model.people[num_people][3])+1)
                 model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
                 model.people[num_people][7] = str(int(model.people[num_people][7])+1)
-        elif int(model.people[num_people][6]) == 2:
+        elif (time == int(model.people[num_people][3])) & (int(model.people[num_people][6] == 4)):
+            ret = model.search_empty(num_floor)
+            if ret :
+                model.people[num_people][6] = 1
+            else :
+                model.people[num_people][6] = 5
+                model.restroom[num_floor][1] += 1
+                model.people[num_people][3] = str(int(model.people[num_people][3])+1)
+                model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
+                model.people[num_people][7] = str(int(model.people[num_people][7])+1)
+        elif (int(model.people[num_people][6]) == 2) or (int(model.people[num_people][6]) == 5):
             ret = model.search_empty(num_floor)
             if ret :
                 model.people[num_people][6] = 1
                 model.restroom[num_floor][1] -= 1
-            elif int(model.people[num_people][7]) == 3000:
-                print('！！！！！！もう待てない！！！！！！')
-                model.move_room(num_people,place_name,'t3')
-                model.people[num_people][6] = 4
-                model.restroom[num_floor][1] -= 1
+            elif (time == 120) & (np.random.rand() > 0.5) & (int(model.people[num_people][6]) == 2):
+                 near = model.search_near(place_name)
+                 print(near)
+                 model.move_room(num_people,place_name,near)
+                 model.people[num_people][6] = 4
+                 model.restroom[num_floor][1] -= 1
             else :
                 model.people[num_people][3] = str(int(model.people[num_people][3])+1)
                 model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
@@ -125,15 +141,17 @@ for time in model.t:
         elif time == int(model.people[num_people][5]):
             model.leave_room(num_floor)
             model.people[num_people][6] = 3
-    wait_people.append(model.restroom[0][1])
+    for i in range(len(model.restroom)):
+        wait_people[i].append(model.restroom[i][1])
 
     print(*model.restroom, sep='\n')
     print('\n')
 x = range(0,finish_time)
-y = wait_people
-model.make_line_graph(x,y)
 wait_time = []
 for i in model.people[1:]:
     wait_time.append(int(i[7]))
-print(np.mean(np.array(wait_time)))
 print(*model.people, sep='\n')
+print(np.mean(np.array(wait_time)))
+for i in range(len(wait_people)):
+    pyplot.plot(x,wait_people[i])
+pyplot.show()
