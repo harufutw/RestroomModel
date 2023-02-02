@@ -79,12 +79,19 @@ class RestroomModel:
         self.people[num_people][5] = str(int(self.people[num_people][3]) + int(self.people[num_people][4]))
         self.people[num_people][2] = place_to
 
+    # 現在地から最も近いフロアのトイレを返す関数
     def search_near(self,place_name):
         for i in range(len(self.place)):
             if place_name == self.place[i][0]:
                 break
         near = 't{0}'.format(self.place[i].index(sorted(self.place[i][1:])[1])+1)
         return near
+
+    # 満室でない最も近いフロアのトイレを返す関数
+    def search_empty_floor(self):
+        num_restroom_each = [sum(i[0]) for i in self.restroom]
+        empty_floor = 't{0}'.format(num_restroom_each.index(min(num_restroom_each))+2)
+        return empty_floor
 
 
 model = RestroomModel()
@@ -127,12 +134,19 @@ for time in model.t:
             if ret :
                 model.people[num_people][6] = 1
                 model.restroom[num_floor][1] -= 1
-            elif (time == 120) & (np.random.rand() > 0.5) & (int(model.people[num_people][6]) == 2):
-                 near = model.search_near(place_name)
-                 print(near)
-                 model.move_room(num_people,place_name,near)
-                 model.people[num_people][6] = 4
-                 model.restroom[num_floor][1] -= 1
+            elif (np.random.rand() >= 0.0) & (int(model.people[num_people][6]) == 2):
+                near = model.search_near(place_name)
+                for search_i in range(len(model.restroom)):
+                    print(near)
+                    if model.search_empty(model.num_floor_list[near]):
+                        print('空室あった！！！！！！！！！！')
+                        break
+                    else:
+                        near = model.search_near(near)
+                        print('空室なし！！！！！！！！！！！！！！！')
+                model.move_room(num_people,place_name,near)
+                model.people[num_people][6] = 4
+                model.restroom[num_floor][1] -= 1
             else :
                 model.people[num_people][3] = str(int(model.people[num_people][3])+1)
                 model.people[num_people][5] = str(int(model.people[num_people][3]) + int(model.people[num_people][4]))
@@ -143,8 +157,8 @@ for time in model.t:
             model.people[num_people][6] = 3
     for i in range(len(model.restroom)):
         wait_people[i].append(model.restroom[i][1])
-
     print(*model.restroom, sep='\n')
+    print(model.search_empty_floor())
     print('\n')
 x = range(0,finish_time)
 wait_time = []
