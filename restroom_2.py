@@ -178,4 +178,4 @@ for i in range(len(wait_people)):
     pyplot.plot(x,wait_people[i])
     list.append(wait_people[i])
 pyplot.show()
-model.write_csv('./result_1.csv',list)
+model.write_csv('./result.csv',list)
