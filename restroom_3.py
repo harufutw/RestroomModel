@@ -197,7 +197,7 @@ print(model.probability)
 finish_time = 1500
 model.make_time_model(0,finish_time)
 wait_people = [[],[],[],[],[]]
-img_size = (720,1280)
+img_size = (1080,1920)
 for model_time in model.t:
     print(model_time)
     for num_people in range(1,len(model.people)):
@@ -268,9 +268,9 @@ for i in model.people[1:]:
 print(*model.people, sep='\n')
 print(np.mean(np.array(wait_time)))
 list = [list(x)]
+model.make_video(img_size)
 for i in range(len(wait_people)):
     pyplot.plot(x,wait_people[i])
     list.append(wait_people[i])
 pyplot.show()
 model.write_csv('./User_{0}.csv'.format(1-model.probability),list)
-model.make_video(img_size)
